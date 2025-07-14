@@ -1,44 +1,14 @@
+import type { 
+  AgentDetail, 
+  AgentListApiResponse, 
+  AgentDetailApiResponse, 
+  UpdateAgentRequest 
+} from '../types';
+
 /**
  * バックエンドのベースURL
  */
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-
-/**
- * APIレスポンスの型定義
- */
-interface AgentApiResponse {
-  status: 'success' | 'error';
-  result: string; // stringified JSON array
-}
-
-/**
- * エージェント詳細情報の型定義
- */
-interface AgentDetail {
-  name: string;
-  description: string;
-  instruction: string;
-  model: string;
-  output_key: string;
-  sub_agents: string[];
-  tools: string[];
-}
-
-/**
- * エージェント詳細APIレスポンスの型定義
- */
-interface AgentDetailApiResponse {
-  status: 'success' | 'error';
-  agent_name: string;
-  result: string; // stringified JSON object
-}
-
-/**
- * エージェント更新用のリクエストボディ型定義
- */
-interface UpdateAgentRequest {
-  instruction: string;
-}
 
 /**
  * 利用可能なエージェントのリストを取得します。
@@ -50,7 +20,7 @@ export const fetchAgents = async (): Promise<string[]> => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data: AgentApiResponse = await response.json();
+    const data: AgentListApiResponse = await response.json();
 
     if (data.status !== 'success') {
       throw new Error('API returned an error status');

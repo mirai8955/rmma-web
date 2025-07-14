@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchAgentDetail } from '../api/agentApi';
-import { ArrowLeft, Bot, Cog, Wrench } from 'lucide-react';
-
-interface AgentDetail {
-  name: string;
-  description: string;
-  instruction: string;
-  model: string;
-  output_key: string;
-  sub_agents: string[];
-  tools: string[];
-}
+import { fetchAgentDetail, updateAgentDetail } from '../api/agentApi';
+import { ArrowLeft, Bot, Cog, Wrench, Save } from 'lucide-react';
+import type { AgentDetail } from '../types';
 
 const AgentDetailPage = () => {
   const { agentName } = useParams<{ agentName: string }>();
   const [agentDetail, setAgentDetail] = useState<AgentDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 編集関連の状態
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedInstruction, setEditedInstruction] = useState<string>('');
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
+  
+  // テキストエリアの参照
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const loadAgentDetail = async () => {
@@ -31,6 +31,7 @@ const AgentDetailPage = () => {
         setIsLoading(true);
         const detail = await fetchAgentDetail(agentName);
         setAgentDetail(detail);
+        setEditedInstruction(detail.instruction);
         setError(null);
       } catch (err) {
         setError('Failed to load agent details. Please try again later.');
@@ -42,6 +43,51 @@ const AgentDetailPage = () => {
 
     loadAgentDetail();
   }, [agentName]);
+
+  // 編集モードに入る
+  const handleEditClick = () => {
+    setIsEditing(true);
+    // 次のレンダリング後にフォーカスを設定
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // カーソルを最後尾に移動
+        textareaRef.current.setSelectionRange(
+          textareaRef.current.value.length,
+          textareaRef.current.value.length
+        );
+      }
+    }, 0);
+  };
+
+  // 編集モードを終了
+  const handleBlur = () => {
+    setIsEditing(false);
+    // 変更があったかどうかをチェック
+    if (agentDetail && editedInstruction !== agentDetail.instruction) {
+      setHasChanges(true);
+    }
+  };
+
+  // 変更を保存
+  const handleSave = async () => {
+    if (!agentName || !agentDetail) return;
+
+    try {
+      setIsSaving(true);
+      const updatedDetail = await updateAgentDetail(agentName, {
+        instruction: editedInstruction,
+      });
+      setAgentDetail(updatedDetail);
+      setHasChanges(false);
+      setError(null);
+    } catch (err) {
+      setError('Failed to save changes. Please try again.');
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -76,14 +122,27 @@ const AgentDetailPage = () => {
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Back Button */}
-        <Link 
-          to="/agent/lists" 
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Agent List
-        </Link>
+        {/* Back Button and Save Button */}
+        <div className="flex justify-between items-center mb-6">
+          <Link 
+            to="/agent/lists" 
+            className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Agent List
+          </Link>
+          
+          {hasChanges && (
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </button>
+          )}
+        </div>
 
         {/* Agent Header */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6">
@@ -116,16 +175,31 @@ const AgentDetailPage = () => {
           </div>
         </div>
 
-        {/* Agent Instructions */}
+        {/* Agent Instructions (Editable) */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6">
           <div className="p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Instructions
+              <span className="text-sm text-gray-500 ml-2">(Click to edit)</span>
             </h2>
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <pre className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-sm">
-                {agentDetail.instruction}
-              </pre>
+              {isEditing ? (
+                <textarea
+                  ref={textareaRef}
+                  value={editedInstruction}
+                  onChange={(e) => setEditedInstruction(e.target.value)}
+                  onBlur={handleBlur}
+                  className="w-full h-32 text-gray-700 dark:text-gray-300 text-sm bg-transparent border-none outline-none resize-none"
+                  style={{ whiteSpace: 'pre-wrap' }}
+                />
+              ) : (
+                <pre 
+                  className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-sm cursor-text hover:bg-gray-100 dark:hover:bg-gray-600 rounded p-2 transition-colors"
+                  onClick={handleEditClick}
+                >
+                  {editedInstruction}
+                </pre>
+              )}
             </div>
           </div>
         </div>
