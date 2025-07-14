@@ -1,5 +1,6 @@
 import { Route, Routes, Link } from 'react-router-dom';
 import AgentListPage from './pages/AgentListPage';
+import AgentDetailPage from './pages/AgentDetailPage';
 
 function WelcomePage() {
   return (
@@ -26,6 +27,7 @@ function App() {
     <Routes>
       <Route path="/" element={<WelcomePage />} />
       <Route path="/agent/lists" element={<AgentListPage />} />
+      <Route path="/agent/detail/:agentName" element={<AgentDetailPage />} />
     </Routes>
   )
 }

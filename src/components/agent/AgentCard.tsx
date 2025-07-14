@@ -1,4 +1,5 @@
 import { Bot, Cog, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface AgentCardProps {
   agentName: string;
@@ -37,9 +38,11 @@ const AgentCard = ({ agentName }: AgentCardProps) => {
           </div>
         </div>
         <div className="mt-6 flex justify-end">
-          <button className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition-colors">
-            Select
-          </button>
+          <Link to={`/agent/detail/${agentName}`}>
+            <button className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition-colors">
+              Select
+            </button>
+          </Link>
         </div>
       </div>
     </div>
