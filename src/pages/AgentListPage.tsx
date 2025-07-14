@@ -34,7 +34,7 @@ const AgentListPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className="bg-green-100 dark:bg-green-900 min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         <AgentList agents={agents} />
       </div>
