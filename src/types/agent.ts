@@ -29,8 +29,16 @@ export interface AgentDetailApiResponse {
 }
 
 /**
- * エージェント更新用のリクエストボディ型定義
+ * エージェント更新APIレスポンスの型定義
  */
-export interface UpdateAgentRequest {
-  instruction: string;
-} 
+export interface AgentUpdateApiResponse {
+  status: 'success' | 'error';
+  agent_name?: string;
+  result: string; // stringified JSON object
+}
+
+/**
+ * エージェント更新用のリクエストボディ型定義
+ * AgentDetailと同じ構造を持つ
+ */
+export type UpdateAgentRequest = AgentDetail; 

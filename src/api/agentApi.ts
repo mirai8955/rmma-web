@@ -2,6 +2,7 @@ import type {
   AgentDetail, 
   AgentListApiResponse, 
   AgentDetailApiResponse, 
+  AgentUpdateApiResponse,
   UpdateAgentRequest 
 } from '../types';
 
@@ -73,26 +74,69 @@ export const fetchAgentDetail = async (agentName: string): Promise<AgentDetail> 
  */
 export const updateAgentDetail = async (agentName: string, updateData: UpdateAgentRequest): Promise<AgentDetail> => {
   try {
-    const response = await fetch(`${BACKEND_URL}/agent/${agentName}`, {
+    const requestBody = JSON.stringify(updateData);
+    const requestUrl = `${BACKEND_URL}/agent/${agentName}`;
+    
+    console.log('Sending update request:', {
+      url: requestUrl,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(updateData),
+      body: requestBody,
+      parsedBody: updateData
+    });
+
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: requestBody,
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // エラーレスポンスの詳細を取得
+      const errorText = await response.text();
+      console.error('Update failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+        url: requestUrl,
+        requestData: updateData
+      });
+      
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    const data: AgentDetailApiResponse = await response.json();
+    const data: AgentUpdateApiResponse = await response.json();
+    
+    console.log('Raw API response:', data);
+    console.log('Response status:', data.status);
+    console.log('Response result (raw):', data.result);
 
     if (data.status !== 'success') {
-      throw new Error('API returned an error status');
+      throw new Error(`API returned error status: ${data.status}`);
     }
 
-    // resultは文字列化されたJSONなので、パースしてオブジェクトに変換する
-    const agentDetail: AgentDetail = JSON.parse(data.result);
+    // resultは文字列化されたJSONまたは直接オブジェクトの可能性がある
+    let agentDetail: AgentDetail;
+    try {
+      // まず文字列として解析を試行
+      if (typeof data.result === 'string') {
+        agentDetail = JSON.parse(data.result);
+      } else {
+        // 既にオブジェクトの場合はそのまま使用
+        agentDetail = data.result as AgentDetail;
+      }
+      console.log('Parsed agent detail:', agentDetail);
+    } catch (parseError) {
+      console.error('Failed to parse result JSON:', parseError);
+      console.error('Raw result:', data.result);
+      console.error('Result type:', typeof data.result);
+      throw new Error('Failed to parse API response');
+    }
+    
     return agentDetail;
 
   } catch (error) {

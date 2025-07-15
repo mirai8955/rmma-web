@@ -15,6 +15,7 @@ const AgentDetailPage = () => {
   const [editedInstruction, setEditedInstruction] = useState<string>('');
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>('');
   
   // テキストエリアの参照
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -47,6 +48,7 @@ const AgentDetailPage = () => {
   // 編集モードに入る
   const handleEditClick = () => {
     setIsEditing(true);
+    setSuccessMessage(''); // 編集開始時に成功メッセージをクリア
     // 次のレンダリング後にフォーカスを設定
     setTimeout(() => {
       if (textareaRef.current) {
@@ -75,15 +77,36 @@ const AgentDetailPage = () => {
 
     try {
       setIsSaving(true);
+      setError(null); // エラーをクリア
+      
+      console.log('Starting save process for agent:', agentName);
+      console.log('Current agent detail:', agentDetail);
+      console.log('Edited instruction:', editedInstruction);
+      
       const updatedDetail = await updateAgentDetail(agentName, {
+        ...agentDetail,
         instruction: editedInstruction,
       });
+      
+      console.log('Update API response:', updatedDetail);
+      
+      // 更新されたデータで状態を更新
       setAgentDetail(updatedDetail);
+      setEditedInstruction(updatedDetail.instruction);
       setHasChanges(false);
-      setError(null);
+      setIsEditing(false);
+      setSuccessMessage('Changes saved successfully!');
+      
+      console.log('State updated successfully. New agent detail:', updatedDetail);
+      
+      // 3秒後に成功メッセージをクリア
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+      
     } catch (err) {
-      setError('Failed to save changes. Please try again.');
-      console.error(err);
+      console.error('Save failed with error:', err);
+      setError(`Failed to save changes: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }
@@ -132,16 +155,24 @@ const AgentDetailPage = () => {
             Back to Agent List
           </Link>
           
-          {hasChanges && (
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          )}
+          <div className="flex items-center space-x-4">
+            {successMessage && (
+              <div className="text-green-600 font-medium text-sm">
+                {successMessage}
+              </div>
+            )}
+            
+            {hasChanges && (
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Agent Header */}
