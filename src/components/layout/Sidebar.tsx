@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users } from 'lucide-react';
+import { Home, Users, Zap } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -29,6 +29,19 @@ const Sidebar = () => {
         >
           <Home className="w-5 h-5" />
           <span>Top</span>
+        </Link>
+
+        {/* RMMA Execution */}
+        <Link
+          to="/rmma"
+          className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/rmma')
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+          }`}
+        >
+          <Zap className="w-5 h-5" />
+          <span>RMMA</span>
         </Link>
 
         {/* Agents */}
