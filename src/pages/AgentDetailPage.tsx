@@ -114,8 +114,8 @@ const AgentDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-900 min-h-screen">
-        <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="p-6">
+        <div className="container mx-auto">
           <div className="flex items-center justify-center h-64 text-xl">Loading...</div>
         </div>
       </div>
@@ -124,8 +124,8 @@ const AgentDetailPage = () => {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-900 min-h-screen">
-        <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="p-6">
+        <div className="container mx-auto">
           <div className="flex items-center justify-center h-64 text-xl text-red-500">{error}</div>
         </div>
       </div>
@@ -134,8 +134,8 @@ const AgentDetailPage = () => {
 
   if (!agentDetail) {
     return (
-      <div className="bg-white dark:bg-gray-900 min-h-screen">
-        <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="p-6">
+        <div className="container mx-auto">
           <div className="flex items-center justify-center h-64 text-xl">Agent not found</div>
         </div>
       </div>
@@ -143,8 +143,8 @@ const AgentDetailPage = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen">
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="p-6">
+      <div className="container mx-auto">
         {/* Back Button and Save Button */}
         <div className="flex justify-between items-center mb-6">
           <Link 
