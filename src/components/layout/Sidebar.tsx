@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Zap } from 'lucide-react';
+import { Home, Users, Zap, MessageCircle } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -45,16 +45,30 @@ const Sidebar = () => {
         </Link>
 
         {/* Agents */}
-        <div
+        <Link
+          to="/agent/lists"
           className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-            location.pathname.startsWith('/agent')
+            isActive('/agent/list')
               ? 'bg-blue-600 text-white'
-              : 'text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
           }`}
         >
           <Users className="w-5 h-5" />
-          <span>Agents</span>
-        </div>
+          <span>Agents List</span>
+        </Link>
+
+        {/* Agent Chat */}
+        <Link
+          to="/agent/chat"
+          className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/agent/chat')
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+          }`}
+        >
+          <MessageCircle className="w-5 h-5" />
+          <span>Agent Chat</span>
+        </Link>
       </nav>
     </div>
   );

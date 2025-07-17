@@ -144,3 +144,44 @@ export const updateAgentDetail = async (agentName: string, updateData: UpdateAge
     throw error;
   }
 }; 
+
+
+/**
+ * エージェントをストリーミングで呼び出します。
+ * @param agentName 呼び出すエージェント名
+ * @param prompt プロンプト文字列
+ * @param onMessage ストリームから受け取ったチャンクごとに呼ばれるコールバック
+ * @param signal AbortController.signal。中断したいときに利用。
+ */
+export async function runAgentStream(
+  agentName: string,
+  prompt: string,
+  onMessage: (chunk: string) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const url = `${BACKEND_URL}/agent`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agent_name: agentName, prompt }),
+    signal,
+  });
+  if (!res.ok || !res.body) {
+    throw new Error(`HTTP error! status: ${res.status}`);
+  }
+
+  const reader = res.body
+    .pipeThrough(new TextDecoderStream())
+    .getReader();
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      // value は受け取ったテキストチャンク
+      onMessage(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}

@@ -4,6 +4,7 @@ import TopPage from './pages/TopPage';
 import RmmaPage from './pages/RmmaPage';
 import AgentListPage from './pages/AgentListPage';
 import AgentDetailPage from './pages/AgentDetailPage';
+import AgentChatPage from './pages/AgentChatPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/rmma" element={<RmmaPage />} />
         <Route path="/agent/lists" element={<AgentListPage />} />
         <Route path="/agent/detail/:agentName" element={<AgentDetailPage />} />
+        <Route path="/agent/chat" element={<AgentChatPage />} />
       </Routes>
     </Layout>
   )
