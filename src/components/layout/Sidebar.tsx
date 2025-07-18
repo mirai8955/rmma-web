@@ -1,7 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Zap, MessageCircle } from 'lucide-react';
+import { Home, Users, Zap, MessageCircle, X, Menu } from 'lucide-react'; // XとMenuを追加
 
-const Sidebar = () => {
+interface SidebarProps {
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
+}
+
+const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
   const location = useLocation();
 
   const isActive = (path: string) => {
@@ -9,15 +14,38 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="bg-gray-900 text-white w-64 min-h-screen p-4">
-      {/* Logo/Title */}
-      <div className="mb-8">
-        <h1 className="text-xl font-bold text-white">RMMA</h1>
-        <p className="text-sm text-gray-400">Marketing Agent</p>
+    <div className={`bg-gray-900 text-white min-h-screen p-4 transition-all duration-300 ${
+      isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'
+    }`}>
+      {/* Logo/Title & Toggle Button */}
+      <div className={`flex items-center justify-between mb-8 ${
+        isSidebarOpen ? '' : 'hidden'
+      }`}>
+        <div>
+          <h1 className="text-xl font-bold text-white">RMMA</h1>
+          <p className="text-sm text-gray-400">Marketing Agent</p>
+        </div>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 rounded-full hover:bg-gray-700 text-gray-400"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
+      {/* Collapsed Sidebar Toggle Button (when sidebar is closed) */}
+      {!isSidebarOpen && (
+        <button
+          onClick={toggleSidebar}
+          className="p-2 rounded-full hover:bg-gray-700 text-gray-400 fixed top-4 left-4 z-50"
+          title="Open Sidebar"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      )}
+
       {/* Navigation Menu */}
-      <nav className="space-y-2">
+      <nav className={`${isSidebarOpen ? '' : 'hidden'} space-y-2`}>
         {/* Top */}
         <Link
           to="/top"
@@ -44,11 +72,11 @@ const Sidebar = () => {
           <span>RMMA</span>
         </Link>
 
-        {/* Agents */}
+        {/* Agents List */}
         <Link
           to="/agent/lists"
           className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-            isActive('/agent/list')
+            isActive('/agent/lists')
               ? 'bg-blue-600 text-white'
               : 'text-gray-300 hover:bg-gray-800 hover:text-white'
           }`}
