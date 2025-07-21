@@ -1,11 +1,13 @@
 // Agent related types
-export type { 
-  AgentDetail, 
-  AgentListApiResponse, 
-  AgentDetailApiResponse, 
+export type {
+  AgentDetail,
+  AgentListApiResponse,
+  AgentDetailApiResponse,
   AgentUpdateApiResponse,
-  UpdateAgentRequest 
+  UpdateAgentRequest
 } from './agent';
 
-// Future types can be added here
-// export type { ... } from './other-feature'; 
+export type {
+  DocumentItem,
+  ApiResponse
+} from './document'

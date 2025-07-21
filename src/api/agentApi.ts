@@ -1,9 +1,11 @@
-import type { 
-  AgentDetail, 
-  AgentListApiResponse, 
-  AgentDetailApiResponse, 
+import type {
+  AgentDetail,
+  AgentListApiResponse,
+  AgentDetailApiResponse,
   AgentUpdateApiResponse,
-  UpdateAgentRequest 
+  UpdateAgentRequest,
+  DocumentItem,
+  ApiResponse // ApiResponseも追加
 } from '../types';
 
 /**
@@ -76,7 +78,7 @@ export const updateAgentDetail = async (agentName: string, updateData: UpdateAge
   try {
     const requestBody = JSON.stringify(updateData);
     const requestUrl = `${BACKEND_URL}/agent/${agentName}`;
-    
+
     console.log('Sending update request:', {
       url: requestUrl,
       method: 'POST',
@@ -105,12 +107,12 @@ export const updateAgentDetail = async (agentName: string, updateData: UpdateAge
         url: requestUrl,
         requestData: updateData
       });
-      
+
       throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
     const data: AgentUpdateApiResponse = await response.json();
-    
+
     console.log('Raw API response:', data);
     console.log('Response status:', data.status);
     console.log('Response result (raw):', data.result);
@@ -136,14 +138,14 @@ export const updateAgentDetail = async (agentName: string, updateData: UpdateAge
       console.error('Result type:', typeof data.result);
       throw new Error('Failed to parse API response');
     }
-    
+
     return agentDetail;
 
   } catch (error) {
     console.error("Failed to update agent detail:", error);
     throw error;
   }
-}; 
+};
 
 
 /**
@@ -185,3 +187,124 @@ export async function runAgentStream(
     reader.releaseLock();
   }
 }
+
+/**
+ * 利用可能なドキュメントのリストを取得します。
+ * @returns ドキュメントアイテムの配列
+ */
+export const fetchDocumentsList = async (): Promise<DocumentItem[]> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/documents/lists`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data: ApiResponse<string> = await response.json();
+
+    if (data.status !== 'success') {
+      throw new Error('API returned an error status');
+    }
+
+    const rawDocumentNames: string[] = JSON.parse(data.result); // ここで "["test"]" を ["test"] にパース
+    const documentList: DocumentItem[] = rawDocumentNames.map(name => ({
+      filepath: name,
+      filename: name,
+      title: name.replace(/\.\w+$/, '') // 拡張子があれば削除してタイトルとする
+    }));
+    return documentList;
+
+  } catch (error) {
+    console.error("Failed to fetch document list:", error);
+    throw error;
+  }
+};
+
+/**
+ * 特定のドキュメントの内容を取得します。
+ * @param filename ドキュメントのファイル名
+ * @returns ドキュメントの内容
+ */
+export const fetchDocumentContent = async (filename: string): Promise<{ content: string }> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/documents?filename=${encodeURIComponent(filename)}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data: ApiResponse<string> = await response.json(); // ここを修正
+
+    if (data.status !== 'success') {
+      throw new Error('API returned an error status');
+    }
+
+    const documentContent: { content: string } = { content: data.result }; // resultが直接コンテンツ文字列なので修正
+    return documentContent;
+
+  } catch (error) {
+    console.error("Failed to fetch document content:", error);
+    throw error;
+  }
+};
+
+/**
+ * ドキュメントの内容を保存します。
+ * @param filename 保存するドキュメントのファイル名
+ * @param content 保存するMarkdownコンテンツ
+ * @returns 保存結果
+ */
+export const saveDocumentContent = async (filename: string, content: string): Promise<any> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/documents?filename=${encodeURIComponent(filename)}`, { // filenameをクエリパラメータに追加
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content: content }), // contentのみをボディに含める
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ApiResponse<string> = await response.json(); // resultが文字列と仮定
+
+    if (data.status !== 'success') {
+      throw new Error('API returned an error status');
+    }
+    return data.result;
+
+  } catch (error) {
+    console.error("Failed to save document content:", error);
+    throw error;
+  }
+};
+
+/**
+ * 空のドキュメントを作成します。
+ * @param filename 作成するドキュメントのファイル名
+ * @returns 作成結果
+ */
+export const createEmptyDocument = async (filename: string): Promise<any> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/documents?filename=${encodeURIComponent(filename)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content: '' }), // 空のコンテンツを送信
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ApiResponse<string> = await response.json();
+
+    if (data.status !== 'success') {
+      throw new Error('API returned an error status');
+    }
+    return data.result;
+
+  } catch (error) {
+    console.error("Failed to create empty document:", error);
+    throw error;
+  }
+};

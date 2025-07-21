@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Zap, MessageCircle, X, Menu } from 'lucide-react'; // XとMenuを追加
+import { Home, Users, Zap, MessageCircle, X, Menu, FileText } from 'lucide-react'; // FileTextを追加
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -96,6 +96,19 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
         >
           <MessageCircle className="w-5 h-5" />
           <span>Agent Chat</span>
+        </Link>
+
+        {/* Documents */}
+        <Link
+          to="/documents/lists"
+          className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/documents/lists')
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span>Documents</span>
         </Link>
       </nav>
     </div>
